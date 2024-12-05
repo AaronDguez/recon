@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar Inventario</title>
+    {% load static %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header .buttons a {
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .header .buttons a:hover {
+            background-color: #e9ecef;
+        }
+        .container {
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 1200px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        form {
+            margin-bottom: 20px;
+        }
+        form label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        form select,
+        form input[type="number"],
+        form input[type="date"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        form input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .barcode-image {
+            max-width: 100px; 
+            height: auto;
+            vertical-align: middle;
+        }
+
+        .print-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+            margin-left: 40px;
+            position: relative;
+            top: 0px; 
+        }
+
+        .print-button:hover {
+            background-color: #0056b3;
+        }
+
+        .barcode-container {
+            display: flex;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Actualizar Inventario</h1>
+        <div class="buttons">
+            <a href="{% url 'ver_inventario' %}">Volver al Inventario</a>
+        </div>
+    </header>
+    <div class="container">
+        <form method="post">
+            {% csrf_token %}
+            <label for="material">Material:</label>
+            <select name="material" id="material">
+                {% for material in materiales %}
+                    <option value="{{ material.id }}">{{ material.materiales }}</option>
+                {% endfor %}
+            </select>
+        
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" name="cantidad" id="cantidad" required>
+           
+            <input type="submit" value="Agregar">
+        </form>
+        
+        <h2>Registros de Actualización</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Cantidad Adicional</th>
+                    <th>Fecha</th>
+                    <th>Código de Barras</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for actualizacion in actualizaciones %}
+                <tr>
+                    <td>{{ actualizacion.material }}</td>
+                    <td>{{ actualizacion.cantidad }}</td>
+                    <td>{{ actualizacion.fecha }}</td>
+                    <td>
+                        {% if actualizacion.codigo_barras %}
+                        <div class="barcode-container">
+                            <img src="{{ actualizacion.barcode_image_url }}" alt="Código de barras" class="barcode-image">
+                            <button class="print-button" onclick="printBarcode('{{ actualizacion.barcode_image_url }}')">Imprimir</button>
+                        </div>
+                        {% else %}
+                            No disponible
+                        {% endif %}
+                    </td>                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- script imprimir -->
+    <script>
+        function printBarcode(barcodeUrl) {
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write('<img src="' + barcodeUrl + '" onload="window.print();window.close();">');
+            printWindow.document.close();
+        }
+    </script>
+</body>
+</html>

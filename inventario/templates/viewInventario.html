@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+        }
+        .header .buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .header .buttons a {
+            background-color: #fff;
+            color: #007bff;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .header .buttons a:hover {
+            background-color: #e9ecef;
+        }
+        .container {
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 1200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .barcode-image {
+            max-width: 100px; /* Ajusta el tamaño de la imagen según sea necesario */
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Inventario</h1>
+        <div class="buttons">
+            <a href="#">Crear pedido</a>
+            <a href="{% url 'cantidad_inventario' %}">Agregar Cantidad</a>
+            <a href="{% url 'agregar_inventario' %}">Agregar Material</a>
+        </div>
+    </header>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Materiales</th>
+                    <th>Cantidad</th>
+                    <th>Código de Barras</th> 
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in materiales %}
+                <tr>
+                    <td>{{ material.materiales }}</td>
+                    <td>{{ material.cantidad }}</td>
+                    <td>
+                        {% if material.barcode_image_url %}
+                            <img src="{{ material.barcode_image_url }}" alt="Código de barras" width="100">
+                        {% else %}
+                            No disponible
+                        {% endif %}
+                    </td>
+                    
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
