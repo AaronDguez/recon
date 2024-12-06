@@ -10,517 +10,525 @@
     </div>
 </div>
 
-<table class="table table-striped table-hover" id="trackTable">
-    <thead class="table-info">
-        <th>Tracking Number</th>
-        <th>Cliente</th>
-        <th>Procesado</th>
-        <th>Armado</th>
-        <th>Verificación</th>
-        <th>Etiquetado</th>
-        <th>Enviado</th>
-        <th>Acciones</th>
-    </thead>
-    <tbody class="table-group-divider">
-        {% for track in page_obj %}
-        <tr>
-            <td>
-                {{ track.trackNumber }}
-                <input type="hidden" id="trackingNumber-{{ track.trackNumber }}" value="{{ track.trackNumber }}">
-            </td>
-            <td>
-                {{ track.clientName }}
-                <input type="hidden" id="clientName-{{ track.trackNumber }}" value="{{ track.clientName }}">
-            </td>
-            <!-- Procesado -->
-            <td>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-animated {% if track.procesado == None %} bg-primary {% elif track.procesado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
-                        role="progressbar" style="width: 100%"></div>
-                </div>
-                <input type="hidden" id="procesado-{{ track.trackNumber }}"
-                    value="{% if track.procesado == None %}{% else %}{{track.procesado}}{% endif %}">
-            </td>
-            <!-- Armado -->
-            <td>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-animated {% if track.armado == None %} bg-primary {% elif track.armado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
-                        role="progressbar" style="width: 100%"></div>
-                </div>
-                <input type="hidden" id="armado-{{ track.trackNumber }}"
-                    value="{% if track.armado == None %}{% else %}{{track.armado}}{% endif %}">
-            </td>
-            <!-- Verificación -->
-            <td>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-animated {% if track.verificado == None %} bg-primary {% elif track.verificado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
-                        role="progressbar" style="width: 100%"></div>
-                </div>
-                <input type="hidden" id="verificado-{{ track.trackNumber }}"
-                    value="{% if track.verificado == None %}{% else %}{{track.verificado}}{% endif %}">
-            </td>
-            <!-- Etiquetado -->
-            <td>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-animated {% if track.etiquetado == None %} bg-primary {% elif track.etiquetado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
-                        role="progressbar" style="width: 100%"></div>
-                </div>
-                <input type="hidden" id="etiquetado-{{ track.trackNumber }}"
-                    value="{% if track.etiquetado == None %}{% else %}{{track.etiquetado}}{% endif %}">
-            </td>
-            <!-- Enviado -->
-            <td>
-                <div class="progress">
-                    <div class="progress-bar progress-bar-animated {% if track.enviado == None %} bg-primary {% elif track.enviado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
-                        role="progressbar" style="width: 100%"></div>
-                </div>
-                <input type="hidden" id="enviado-{{ track.trackNumber }}"
-                    value="{% if track.enviado == None %}{% else %}{{track.enviado}}{% endif %}">
-            </td>
-            <!-- Action Buttons -->
-            <td>
-                <button id="edit-{{track.trackNumber}}" class="btn btn-primary edit-btn" type="button">Editar</button>
-                <button id="sim-{{track.trackNumber}}" class="btn btn-success sim-btn" type="button">Simular</button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-<!-- Pagination -->
-<nav aria-label="Page navigation">
-    <ul class="pagination justify-content-end">
-        {% if page_obj.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="{% url 'tracking_index' page=page_obj.previous_page_number %}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% endif %} {% for p in pages %}
-        <li class="page-item {% if current_page == p %}active{% endif %}">
-            <a class="page-link" href="{% url 'tracking_index' page=p %}">{{ p }}</a>
-        </li>
-        {% endfor %} {% if page_obj.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="{% url 'tracking_index' page=page_obj.next_page_number %}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% endif %}
-    </ul>
-</nav>
-
-<!-- Modal -->
-<div class="modal fade" id="addOrderModal" tabindex="-1" role="dialog" aria-labelledby="addOrderModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="col-md-11">
-                    <h5 class="modal-title" id="addOrderModalLabel">Agregar Orden</h5>
-                </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <form id="addOrderForm" method="POST">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="quantityBoxes">¿Cuántas cajas desea ordenar?</label>
-                                <input class="form-control" id="quantityBoxes" name="quantityBoxes" type="number"
-                                    min="1" />
+<div class="card-body">
+    <div class="row">
+        <div class="col-md-8">
+            <table class="table table-striped table-hover" id="trackTable">
+                <thead class="table-info">
+                    <th>Tracking Number</th>
+                    <th>Cliente</th>
+                    <th>Procesado</th>
+                    <th>Armado</th>
+                    <th>Verificación</th>
+                    <th>Etiquetado</th>
+                    <th>Enviado</th>
+                    <th>Acciones</th>
+                </thead>
+                <tbody class="table-group-divider">
+                    {% for track in page_obj %}
+                    <tr>
+                        <td>
+                            {{ track.trackNumber }}
+                            <input type="hidden" id="trackingNumber-{{ track.trackNumber }}"
+                                value="{{ track.trackNumber }}">
+                        </td>
+                        <td>
+                            {{ track.clientName }}
+                            <input type="hidden" id="clientName-{{ track.trackNumber }}" value="{{ track.clientName }}">
+                        </td>
+                        <!-- Procesado -->
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-animated {% if track.procesado == None %} bg-primary {% elif track.procesado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    role="progressbar" style="width: 100%"></div>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="orderName">¿A nombre de quien va a ser la orden?</label>
-                                <input class="form-control" id="orderName" name="orderName" type="text"
-                                    placeholder="Nombre" />
+                            <input type="hidden" id="procesado-{{ track.trackNumber }}"
+                                value="{% if track.procesado == None %}{% else %}{{track.procesado}}{% endif %}">
+                        </td>
+                        <!-- Armado -->
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-animated {% if track.armado == None %} bg-primary {% elif track.armado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    role="progressbar" style="width: 100%"></div>
                             </div>
-                        </div>
-                        <input type="hidden" name="trackingNumber" id="trackingNumber" />
-                    </div>
-                    <hr />
-                    <div class="row">
-                        <div class="col-md-9">&nbsp;</div>
-                        <div class="col-md-2">
-                            <button type="submit" class="btn btn-primary">Agregar</button>
-                        </div>
-                    </div>
-                </form>
+                            <input type="hidden" id="armado-{{ track.trackNumber }}"
+                                value="{% if track.armado == None %}{% else %}{{track.armado}}{% endif %}">
+                        </td>
+                        <!-- Verificación -->
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-animated {% if track.verificado == None %} bg-primary {% elif track.verificado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    role="progressbar" style="width: 100%"></div>
+                            </div>
+                            <input type="hidden" id="verificado-{{ track.trackNumber }}"
+                                value="{% if track.verificado == None %}{% else %}{{track.verificado}}{% endif %}">
+                        </td>
+                        <!-- Etiquetado -->
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-animated {% if track.etiquetado == None %} bg-primary {% elif track.etiquetado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    role="progressbar" style="width: 100%"></div>
+                            </div>
+                            <input type="hidden" id="etiquetado-{{ track.trackNumber }}"
+                                value="{% if track.etiquetado == None %}{% else %}{{track.etiquetado}}{% endif %}">
+                        </td>
+                        <!-- Enviado -->
+                        <td>
+                            <div class="progress">
+                                <div class="progress-bar progress-bar-animated {% if track.enviado == None %} bg-primary {% elif track.enviado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    role="progressbar" style="width: 100%"></div>
+                            </div>
+                            <input type="hidden" id="enviado-{{ track.trackNumber }}"
+                                value="{% if track.enviado == None %}{% else %}{{track.enviado}}{% endif %}">
+                        </td>
+                        <!-- Action Buttons -->
+                        <td>
+                            <button id="edit-{{track.trackNumber}}" class="btn btn-primary edit-btn"
+                                type="button">Editar</button>
+                            <button id="sim-{{track.trackNumber}}" class="btn btn-success sim-btn"
+                                type="button">Simular</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-end">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% url 'tracking_index' page=page_obj.previous_page_number %}"
+                            aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    {% endif %} {% for p in pages %}
+                    <li class="page-item {% if current_page == p %}active{% endif %}">
+                        <a class="page-link" href="{% url 'tracking_index' page=p %}">{{ p }}</a>
+                    </li>
+                    {% endfor %} {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{% url 'tracking_index' page=page_obj.next_page_number %}"
+                            aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        <div class="col-md-4 d-flex justify-content-center align-items-center">
+            <div class="simulation-container">
+                <!-- Contenido de la simulación -->
+                <img src="{% static 'media/procesing-icon.png' %}" class="station" id="station1" alt="Estación 1">
+                <img src="{% static 'media/build-icon.jpg' %}" class="station" id="station2" alt="Estación 2">
+                <img src="{% static 'media/checked-icon.png' %}" class="station" id="station3" alt="Estación 3">
+                <img src="{% static 'media/ticket-icon.png' %}" class="station" id="station4" alt="Estación 4">
+                <img src="{% static 'media/shipped-icon.webp' %}" class="station" id="station5" alt="Estación 5">
+
+                <div id="box-container">
+                    <img src="{% static 'media/flat-box.jpg' %}" class="box" id="box" alt="Caja desarmada">
+                    <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja" hidden>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal to edit order -->
-<div class="modal fade" id="editOrderModal" tabindex="-1" role="dialog" aria-labelledby="editOrderModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" style="max-width: 80%;" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="col-md-11">
-                    <h5 class="modal-title" id="editOrderModalLabel">Editar Orden</h5>
+    <!-- Modal -->
+    <div class="modal fade" id="addOrderModal" tabindex="-1" role="dialog" aria-labelledby="addOrderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="col-md-11">
+                        <h5 class="modal-title" id="addOrderModalLabel">Agregar Orden</h5>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
                 </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">X</button>
+                <div class="modal-body">
+                    <form id="addOrderForm" method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="quantityBoxes">¿Cuántas cajas desea ordenar?</label>
+                                    <input class="form-control" id="quantityBoxes" name="quantityBoxes" type="number"
+                                        min="1" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="orderName">¿A nombre de quien va a ser la orden?</label>
+                                    <input class="form-control" id="orderName" name="orderName" type="text"
+                                        placeholder="Nombre" />
+                                </div>
+                            </div>
+                            <input type="hidden" name="trackingNumber" id="trackingNumber" />
+                        </div>
+                        <hr />
+                        <div class="row">
+                            <div class="col-md-9">&nbsp;</div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary">Agregar</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </div>
-            <div class="modal-body">
-                <form id="editOrderForm" action="" method="post">
-                    <!-- Tracking Number y Cliente -->
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="trackNumberInput" class="form-label" id="trackNumber"></label>
-                                <input type="text" class="form-control" id="trackNumberInput" disabled>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="clientNameInput" class="form-label" id="clientName"></label>
-                                <input type="text" class="form-control" id="clientNameInput">
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
-                    <!-- Estado de las estaciones -->
-                    <div class="row">
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="procesadoInput" class="form-label" id="procesado">Procesado</label>
-                                <select id="procesadoInput" class="form-select">
-                                    <option value="">Falta procesar</option>
-                                    <option value="false">Procesado</option>
-                                    <option value="true">Error en produccion</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="armadoInput" class="form-label" id="armado">Armado</label>
-                                <select id="armadoInput" class="form-select">
-                                    <option value="">Falta armar</option>
-                                    <option value="false">Armado</option>
-                                    <option value="true">Error en armado</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
-                                <select id="verificadoInput" class="form-select">
-                                    <option value="">Falta verificar</option>
-                                    <option value="false">Verificado</option>
-                                    <option value="true">Error en verificacion</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
-                                <select id="verificadoInput" class="form-select">
-                                    <option value="">Falta verificar</option>
-                                    <option value="false">Verificado</option>
-                                    <option value="true">Error en verificacion</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="etiquetadoInput" class="form-label" id="etiquetado">Etiquetado</label>
-                                <select id="etiquetadoInput" class="form-select">
-                                    <option value="">Falta etiquetar</option>
-                                    <option value="false">Etiquetado</option>
-                                    <option value="true">Error en etiquetado</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="enviadoInput" class="form-label" id="enviado">Enviado</label>
-                                <select id="enviadoInput" class="form-select">
-                                    <option value="">Falta enviar</option>
-                                    <option value="false">Enviado</option>
-                                    <option value="true">Error en envio</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="row">
-                        <div class="col-md-9">&nbsp;</div>
-                        <div class="col-md-3">
-                            <button type="submit" class="btn btn-primary">Guardar</button>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal to simulate order -->
-<div class="modal fade" id="simulateOrderModal" tabindex="-1" role="dialog" aria-labelledby="simulateOrderModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" style="width: 80%; height: 80%;" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="col-md-11">
-                    <h5 class="modal-title" id="simulateOrderModalLabel">Simular Orden</h5>
-                </div>
-                <div class="col-md-1">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">X</button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <!-- Images for simulation -->
-                <div class="simulation-container">
-                    <!-- Static images for stations -->
-                    <img src="{% static 'media/procesing-icon.png' %}" class="station" id="station1" alt="Estación 1">
-                    <img src="{% static 'media/build-icon.jpg' %}" class="station" id="station2" alt="Estación 2">
-                    <img src="{% static 'media/checked-icon.png' %}" class="station" id="station3" alt="Estación 3">
-                    <img src="{% static 'media/ticket-icon.png' %}" class="station" id="station4" alt="Estación 4">
-                    <img src="{% static 'media/shipped-icon.webp' %}" class="station" id="station5" alt="Estación 5">
-
-                    <!-- Movable box image -->
-                    <div id="box-container">
-                        <img src="{% static 'media/flat-box.jpg' %}" class="box" id="box" alt="Caja desarmada">
-                        <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja" hidden>
+    <!-- Modal to edit order -->
+    <div class="modal fade" id="editOrderModal" tabindex="-1" role="dialog" aria-labelledby="editOrderModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" style="max-width: 80%;" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="col-md-11">
+                        <h5 class="modal-title" id="editOrderModalLabel">Editar Orden</h5>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+                            aria-label="Close">X</button>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <div class="modal-body">
+                    <form id="editOrderForm" action="" method="post">
+                        <!-- Tracking Number y Cliente -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="trackNumberInput" class="form-label" id="trackNumber"></label>
+                                    <input type="text" class="form-control" id="trackNumberInput" disabled>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="clientNameInput" class="form-label" id="clientName"></label>
+                                    <input type="text" class="form-control" id="clientNameInput">
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <!-- Estado de las estaciones -->
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="procesadoInput" class="form-label" id="procesado">Procesado</label>
+                                    <select id="procesadoInput" class="form-select">
+                                        <option value="">Falta procesar</option>
+                                        <option value="false">Procesado</option>
+                                        <option value="true">Error en produccion</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="armadoInput" class="form-label" id="armado">Armado</label>
+                                    <select id="armadoInput" class="form-select">
+                                        <option value="">Falta armar</option>
+                                        <option value="false">Armado</option>
+                                        <option value="true">Error en armado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
+                                    <select id="verificadoInput" class="form-select">
+                                        <option value="">Falta verificar</option>
+                                        <option value="false">Verificado</option>
+                                        <option value="true">Error en verificacion</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
+                                    <select id="verificadoInput" class="form-select">
+                                        <option value="">Falta verificar</option>
+                                        <option value="false">Verificado</option>
+                                        <option value="true">Error en verificacion</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="etiquetadoInput" class="form-label" id="etiquetado">Etiquetado</label>
+                                    <select id="etiquetadoInput" class="form-select">
+                                        <option value="">Falta etiquetar</option>
+                                        <option value="false">Etiquetado</option>
+                                        <option value="true">Error en etiquetado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="enviadoInput" class="form-label" id="enviado">Enviado</label>
+                                    <select id="enviadoInput" class="form-select">
+                                        <option value="">Falta enviar</option>
+                                        <option value="false">Enviado</option>
+                                        <option value="true">Error en envio</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-md-9">&nbsp;</div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary">Guardar</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Styles -->
-<style>
-    #canvas {
-        pointer-events: none;
-    }
-
-    .simulation-container {
-        position: relative;
-        width: 100%;
-        height: 500px;
-        border: 1px solid #ccc;
-    }
-
-    .station {
-        position: absolute;
-        width: 100px;
-        height: 100px;
-    }
-
-    /* Positions for the stations */
-    #station1 {
-        top: 50px;
-        left: 50px;
-    }
-
-    #station2 {
-        top: 300px;
-        left: 50px;
-    }
-
-    #station3 {
-        top: 300px;
-        left: 300px;
-    }
-
-    #station4 {
-        top: 50px;
-        left: 300px;
-    }
-
-    #station5 {
-        top: 200px;
-        left: 200px;
-    }
-
-    /* Movable box */
-    .box {
-        position: absolute;
-        width: 100px;
-        height: 100px;
-        top: 0px;
-        /* Initial position */
-        left: 0px;
-        transition: all 1s ease;
-    }
-</style>
-
-
-<script>
-    let orden = null;
-    const editModal = document.getElementById('editOrderModal')
-    // Add order
-    Date.prototype.getWeek = function () {
-        const date = new Date(this.getTime());
-        date.setHours(0, 0, 0, 0);
-        date.setDate(date.getDate() + 4 - (date.getDay() || 7)); // Adjust the date to the nearest Thursday
-        const yearStart = new Date(date.getFullYear(), 0, 1);
-        return Math.ceil((((date - yearStart) / 86400000) + 1) / 7); // Calculate week number
-    };
-    $("#addOrderForm").on("submit", function (e) {
-        e.preventDefault();
-        let year = new Date().getFullYear(),
-            week = new Date().getWeek();
-        // Generate a random tracking number that doesn't exist in the table
-        let genTrackNum = -1, exists = true;
-        while (exists) {
-            genTrackNum = Math.floor(Math.random() * 1000);
-            if (genTrackNum < 10) genTrackNum = `00${genTrackNum}`;
-            else if (genTrackNum < 100) genTrackNum = `0${genTrackNum}`;
-            $("#trackingNumber").val(`M${year}${week}${genTrackNum}`);
-            exists = $(`#trackingNumber-${$("#trackingNumber").val()}`).length > 0;
+    <!-- Styles -->
+    <style>
+        .simulation-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            /* Ajustar según necesidad */
+            height: auto;
+            aspect-ratio: 1;
+            /* Mantener proporción cuadrada */
+            margin: auto;
+            /* Centrar la simulación */
+            border: 1px solid #ccc;
+            overflow: hidden;
         }
-        $.ajax({
-            url: "{% url 'tracking_add' %}",
-            type: "POST",
-            data: {
-                quantityBoxes: $("#quantityBoxes").val(),
-                orderName: $("#orderName").val(),
-                csrfmiddlewaretoken: "{{ csrf_token }}",
-                trackingNumber: $("#trackingNumber").val(),
-            },
-            success: function (response) {
-                $("#addOrderModal").modal("hide");
-                $("#alertMessage").text(response.message);
-                $("#alertModal").modal("show");
-            },
-            error: function (error) {
-                $("#alertMessage").text(error.responseJSON.message);
-                $("#alertModal").modal("show");
-            },
-        });
-    });
 
-    $(document).ready(function () {
-        // Abrir modal de editar orden
-        $('.edit-btn').on('click', function () {
-            const trackNumber = $(this).attr('id').split('-')[1];
-
-            const clientName = $("#clientName-" + trackNumber).val();
-            const procesado = $("#procesado-" + trackNumber).val();
-            const armado = $("#armado-" + trackNumber).val();
-            const verificado = $("#verificado-" + trackNumber).val();
-            const etiquetado = $("#etiquetado-" + trackNumber).val();
-            const enviado = $("#enviado-" + trackNumber).val();
-
-            // Populate the modal content
-            $('#trackNumberInput').val(trackNumber);
-            $('#clientNameInput').val(clientName);
-
-            // Set the selected option for each select element
-            $('#procesadoInput').val(getValue(procesado));
-            $('#armadoInput').val(getValue(armado));
-            $('#verificadoInput').val(getValue(verificado));
-            $('#etiquetadoInput').val(getValue(etiquetado));
-            $('#enviadoInput').val(getValue(enviado));
-
-            $('#editOrderModal').modal('show');
-        });
-    });
-
-    function getValue(valor) {
-        console.log(valor)
-        switch (valor) {
-            case 'True':
-            case true:
-                return 'true';
-            case 'False':
-            case false:
-                return 'false';
-            default:
-                return '';
+        .table {
+            width: 100%;
+            /* Asegurar que la tabla ocupe todo su espacio */
         }
-    }
 
-    // Simulate order
-    $(document).ready(function () {
-        $('.sim-btn').on('click', function () {
-            const trackNumber = $(this).attr('id').split('-')[1];
-            const procesado = $("#procesado-" + trackNumber).val();
-            const armado = $("#armado-" + trackNumber).val();
-            const verificado = $("#verificado-" + trackNumber).val();
-            const etiquetado = $("#etiquetado-" + trackNumber).val();
-            const enviado = $("#enviado-" + trackNumber).val();
+        .card-body .row {
+            display: flex;
+            flex-wrap: nowrap;
+            /* Evitar que los elementos se solapen */
+            gap: 15px;
+            /* Espacio entre tabla y simulación */
+        }
 
-            $('#simulateOrderModalLabel').html(`Simular Orden #${trackNumber}`);
-            $('#simulateOrderModal').on('shown.bs.modal', () => {
-                startSim(procesado, armado, verificado, etiquetado, enviado);
+        .station {
+            position: absolute;
+            width: 15%;
+            /* Tamaño relativo al contenedor */
+            height: 15%;
+            /* Ajustar proporción */
+        }
+
+        /* Ajustes para posiciones */
+        #station1 {
+            top: 10%;
+            left: 10%;
+        }
+
+        #station2 {
+            bottom: 10%;
+            left: 10%;
+        }
+
+        #station3 {
+            bottom: 10%;
+            right: 10%;
+        }
+
+        #station4 {
+            top: 10%;
+            right: 10%;
+        }
+
+        #station5 {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .box {
+            position: absolute;
+            width: 15%;
+            /* Tamaño relativo */
+            height: 15%;
+            top: 0;
+            left: 0;
+            transition: all 1s ease;
+        }
+    </style>
+
+
+    <!-- <script>
+        let orden = null;
+        const editModal = document.getElementById('editOrderModal')
+        document.getElementById('simulationContainer').hidden = true;
+        // Add order
+        Date.prototype.getWeek = function () {
+            const date = new Date(this.getTime());
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() + 4 - (date.getDay() || 7)); // Adjust the date to the nearest Thursday
+            const yearStart = new Date(date.getFullYear(), 0, 1);
+            return Math.ceil((((date - yearStart) / 86400000) + 1) / 7); // Calculate week number
+        };
+        $("#addOrderForm").on("submit", function (e) {
+            e.preventDefault();
+            let year = new Date().getFullYear(),
+                week = new Date().getWeek();
+            // Generate a random tracking number that doesn't exist in the table
+            let genTrackNum = -1, exists = true;
+            while (exists) {
+                genTrackNum = Math.floor(Math.random() * 1000);
+                if (genTrackNum < 10) genTrackNum = `00${genTrackNum}`;
+                else if (genTrackNum < 100) genTrackNum = `0${genTrackNum}`;
+                $("#trackingNumber").val(`M${year}${week}${genTrackNum}`);
+                exists = $(`#trackingNumber-${$("#trackingNumber").val()}`).length > 0;
+            }
+            $.ajax({
+                url: "{% url 'tracking_add' %}",
+                type: "POST",
+                data: {
+                    quantityBoxes: $("#quantityBoxes").val(),
+                    orderName: $("#orderName").val(),
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                    trackingNumber: $("#trackingNumber").val(),
+                },
+                success: function (response) {
+                    $("#addOrderModal").modal("hide");
+                    $("#alertMessage").text(response.message);
+                    $("#alertModal").modal("show");
+                },
+                error: function (error) {
+                    $("#alertMessage").text(error.responseJSON.message);
+                    $("#alertModal").modal("show");
+                },
             });
-            $('#simulateOrderModal').modal('show');
         });
-    });
 
-    function startSim(proc, arm, ver, eti, env) {
-        const params = [proc, arm, ver, eti, env];
-        const positions = [
-            { top: $("#station1").css('top'), left: $("#station1").css('left') },
-            { top: $("#station2").css('top'), left: $("#station2").css('left') },
-            { top: $("#station3").css('top'), left: $("#station3").css('left') },
-            { top: $("#station4").css('top'), left: $("#station4").css('left') },
-            { top: $("#station5").css('top'), left: $("#station5").css('left') }
-        ];
-        $("#box").css({ 'top': '0px', 'left': '0px', 'transition': 'none' });
-        async function animateStation(index) {
-            console.log(`Index: ${index}`)
-            if (index >= params.length || params[index] === "") {
-                return; // Stop if no more stations or empty parameter
+        $(document).ready(function () {
+            // Abrir modal de editar orden
+            $('.edit-btn').on('click', function () {
+                const trackNumber = $(this).attr('id').split('-')[1];
+
+                const clientName = $("#clientName-" + trackNumber).val();
+                const procesado = $("#procesado-" + trackNumber).val();
+                const armado = $("#armado-" + trackNumber).val();
+                const verificado = $("#verificado-" + trackNumber).val();
+                const etiquetado = $("#etiquetado-" + trackNumber).val();
+                const enviado = $("#enviado-" + trackNumber).val();
+
+                // Populate the modal content
+                $('#trackNumberInput').val(trackNumber);
+                $('#clientNameInput').val(clientName);
+
+                // Set the selected option for each select element
+                $('#procesadoInput').val(getValue(procesado));
+                $('#armadoInput').val(getValue(armado));
+                $('#verificadoInput').val(getValue(verificado));
+                $('#etiquetadoInput').val(getValue(etiquetado));
+                $('#enviadoInput').val(getValue(enviado));
+
+                $('#editOrderModal').modal('show');
+            });
+        });
+
+        function getValue(valor) {
+            console.log(valor)
+            switch (valor) {
+                case 'True':
+                case true:
+                    return 'true';
+                case 'False':
+                case false:
+                    return 'false';
+                default:
+                    return '';
             }
-            if (index === 2) {
-                $("#box").attr("src", "{% static 'media/cajas-carton.jpg' %}");
-            }
-            await $("#box").animate(positions[index], 1000);
-            await new Promise(r => setTimeout(r, 3000));
-            if (params[index] == "True") {
-                $("#alertMessage").text(`Error en la estación ${index + 1}. Favor de revisar el producto.`);
-                $("#alertModal").modal("show");
-                return; // End if there's an error
-            }
-            animateStation(index + 1); // Call the next station
         }
-        animateStation(0); // Start the animation from the first station
-    }
 
-    // Edit order
-    $('#editOrderForm').on("submit", function (e) {
-        e.preventDefault(); // Prevent default form submission
+        // Simulate order
+        $(document).ready(function () {
+            $('.sim-btn').on('click', function () {
+                const trackNumber = $(this).attr('id').split('-')[1];
+                const procesado = $("#procesado-" + trackNumber).val();
+                const armado = $("#armado-" + trackNumber).val();
+                const verificado = $("#verificado-" + trackNumber).val();
+                const etiquetado = $("#etiquetado-" + trackNumber).val();
+                const enviado = $("#enviado-" + trackNumber).val();
 
-        $.ajax({
-            url: "{% url 'tracking_edit' %}", // Ensure this URL points to the correct view
-            type: "POST",
-            data: {
-                trackingNumber: $('#trackNumberInput').val(),
-                clientName: $('#clientNameInput').val(),
-                procesado: $('#procesadoInput').val(),
-                armado: $('#armadoInput').val(),
-                verificado: $('#verificadoInput').val(),
-                etiquetado: $('#etiquetadoInput').val(),
-                enviado: $('#enviadoInput').val(),
-                csrfmiddlewaretoken: "{{ csrf_token }}",
-            },
-            success: function (response) {
-                $("#editOrderModal").modal("hide");
-                $("#alertMessage").text(response.message);
-                $("#alertModal").modal("show");
-            },
-            error: function (error) {
-                $("#alertMessage").text(error.responseJSON.message);
-                $("#alertModal").modal("show");
-            },
+                $('#simulateOrderModalLabel').html(`Simular Orden #${trackNumber}`);
+                $('#simulateOrderModal').on('shown.bs.modal', () => {
+                    startSim(procesado, armado, verificado, etiquetado, enviado);
+                });
+                $('#simulateOrderModal').modal('show');
+            });
         });
-    });
-</script>
+
+        function startSim(proc, arm, ver, eti, env) {
+            const params = [proc, arm, ver, eti, env];
+            const positions = [
+                { top: $("#station1").css('top'), left: $("#station1").css('left') },
+                { top: $("#station2").css('top'), left: $("#station2").css('left') },
+                { top: $("#station3").css('top'), left: $("#station3").css('left') },
+                { top: $("#station4").css('top'), left: $("#station4").css('left') },
+                { top: $("#station5").css('top'), left: $("#station5").css('left') }
+            ];
+            $("#box").css({ 'top': '0px', 'left': '0px', 'transition': 'none' });
+            async function animateStation(index) {
+                console.log(`Index: ${index}`)
+                if (index >= params.length || params[index] === "") {
+                    return; // Stop if no more stations or empty parameter
+                }
+                if (index === 2) {
+                    $("#box").attr("src", "{% static 'media/cajas-carton.jpg' %}");
+                }
+                await $("#box").animate(positions[index], 1000);
+                await new Promise(r => setTimeout(r, 4000));
+                if (params[index] == "True") {
+                    $("#alertMessage").text(`Error en la estación ${index + 1}. Favor de revisar el producto.`);
+                    $("#alertModal").modal("show");
+                    return; // End if there's an error
+                }
+                animateStation(index + 1); // Call the next station
+            }
+            animateStation(0); // Start the animation from the first station
+        }
+
+        // Edit order
+        $('#editOrderForm').on("submit", function (e) {
+            e.preventDefault(); // Prevent default form submission
+
+            $.ajax({
+                url: "{% url 'tracking_edit' %}", // Ensure this URL points to the correct view
+                type: "POST",
+                data: {
+                    trackingNumber: $('#trackNumberInput').val(),
+                    clientName: $('#clientNameInput').val(),
+                    procesado: $('#procesadoInput').val(),
+                    armado: $('#armadoInput').val(),
+                    verificado: $('#verificadoInput').val(),
+                    etiquetado: $('#etiquetadoInput').val(),
+                    enviado: $('#enviadoInput').val(),
+                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                },
+                success: function (response) {
+                    $("#editOrderModal").modal("hide");
+                    $("#alertMessage").text(response.message);
+                    $("#alertModal").modal("show");
+                },
+                error: function (error) {
+                    $("#alertMessage").text(error.responseJSON.message);
+                    $("#alertModal").modal("show");
+                },
+            });
+        });
+    </script> -->
+</div>
 {% endblock %}
