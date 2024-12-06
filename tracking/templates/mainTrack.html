@@ -56,14 +56,14 @@
                                 <input type="hidden" id="armado-{{ track.trackNumber }}"
                                     value="{% if track.armado == None %}{% else %}{{track.armado}}{% endif %}">
                             </td>
-                            <!-- Verificación -->
+                            <!-- Prueba -->
                             <td>
                                 <div class="progress">
-                                    <div class="progress-bar progress-bar-animated {% if track.verificado == None %} bg-primary {% elif track.verificado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                                    <div class="progress-bar progress-bar-animated {% if track.prueba == None %} bg-primary {% elif track.prueba == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
                                         role="progressbar" style="width: 100%"></div>
                                 </div>
-                                <input type="hidden" id="verificado-{{ track.trackNumber }}"
-                                    value="{% if track.verificado == None %}{% else %}{{track.verificado}}{% endif %}">
+                                <input type="hidden" id="prueba-{{ track.trackNumber }}"
+                                    value="{% if track.prueba == None %}{% else %}{{track.prueba}}{% endif %}">
                             </td>
                             <!-- Etiquetado -->
                             <td>
@@ -134,10 +134,9 @@
                     </p>
                     <p><img src="{% static 'media/shipped-icon.webp' %}" class="station" id="station5" alt="Estación 5">
                     </p>
-
                     <div id="box-container">
                         <img src="{% static 'media/flat-box.jpg' %}" class="box" id="box" alt="Caja desarmada">
-                        <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja" hidden>
+                        <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja" aria-hidden="true">
                     </div>
                 </div>
             </div>
@@ -161,7 +160,7 @@
                 </div>
             </div>
             <div class="modal-body">
-                <form id="addOrderForm" method="POST">
+                <form id="addOrderForm" action="{% url 'tracking_add' %}" method="POST">
                     {% csrf_token %}
                     <div class="row">
                         <div class="col-md-6">
@@ -178,7 +177,6 @@
                                     placeholder="Nombre" />
                             </div>
                         </div>
-                        <input type="hidden" name="trackingNumber" id="trackingNumber" />
                     </div>
                     <hr />
                     <div class="row">
@@ -207,7 +205,8 @@
                 </div>
             </div>
             <div class="modal-body">
-                <form id="editOrderForm" action="" method="post">
+                <form id="editOrderForm" action="{% url 'tracking_edit' %}" method="post">
+                    {% csrf_token %}
                     <!-- Tracking Number y Cliente -->
                     <div class="row">
                         <div class="col-md-6">
@@ -248,21 +247,11 @@
                         </div>
                         <div class="col-md-2">
                             <div class="form-group">
-                                <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
-                                <select id="verificadoInput" class="form-select">
-                                    <option value="">Falta verificar</option>
-                                    <option value="false">Verificado</option>
-                                    <option value="true">Error en verificacion</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label for="verificadoInput" class="form-label" id="verificado">Verificado</label>
-                                <select id="verificadoInput" class="form-select">
-                                    <option value="">Falta verificar</option>
-                                    <option value="false">Verificado</option>
-                                    <option value="true">Error en verificacion</option>
+                                <label for="pruebaInput" class="form-label" id="prueba">Prueba</label>
+                                <select id="pruebaInput" class="form-select">
+                                    <option value="">Falta probar</option>
+                                    <option value="false">Probado</option>
+                                    <option value="true">Error en las pruebas</option>
                                 </select>
                             </div>
                         </div>
@@ -365,169 +354,156 @@
     }
 </style>
 
+<script>
+    const trackTable = document.getElementById('trackTable')
+    const editModal = document.getElementById('editOrderModal');
+    const alertModal = document.getElementById('alertModal');
 
-<!-- <script>
-        let orden = null;
-        const editModal = document.getElementById('editOrderModal')
-        document.getElementById('simulationContainer').hidden = true;
-        // Add order
-        Date.prototype.getWeek = function () {
-            const date = new Date(this.getTime());
-            date.setHours(0, 0, 0, 0);
-            date.setDate(date.getDate() + 4 - (date.getDay() || 7)); // Adjust the date to the nearest Thursday
-            const yearStart = new Date(date.getFullYear(), 0, 1);
-            return Math.ceil((((date - yearStart) / 86400000) + 1) / 7); // Calculate week number
-        };
-        $("#addOrderForm").on("submit", function (e) {
-            e.preventDefault();
-            let year = new Date().getFullYear(),
-                week = new Date().getWeek();
-            // Generate a random tracking number that doesn't exist in the table
-            let genTrackNum = -1, exists = true;
-            while (exists) {
-                genTrackNum = Math.floor(Math.random() * 1000);
-                if (genTrackNum < 10) genTrackNum = `00${genTrackNum}`;
-                else if (genTrackNum < 100) genTrackNum = `0${genTrackNum}`;
-                $("#trackingNumber").val(`M${year}${week}${genTrackNum}`);
-                exists = $(`#trackingNumber-${$("#trackingNumber").val()}`).length > 0;
-            }
-            $.ajax({
-                url: "{% url 'tracking_add' %}",
-                type: "POST",
-                data: {
-                    quantityBoxes: $("#quantityBoxes").val(),
-                    orderName: $("#orderName").val(),
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
-                    trackingNumber: $("#trackingNumber").val(),
-                },
-                success: function (response) {
-                    $("#addOrderModal").modal("hide");
-                    $("#alertMessage").text(response.message);
-                    $("#alertModal").modal("show");
-                },
-                error: function (error) {
-                    $("#alertMessage").text(error.responseJSON.message);
-                    $("#alertModal").modal("show");
-                },
-            });
-        });
-
-        $(document).ready(function () {
-            // Abrir modal de editar orden
-            $('.edit-btn').on('click', function () {
-                const trackNumber = $(this).attr('id').split('-')[1];
-
-                const clientName = $("#clientName-" + trackNumber).val();
-                const procesado = $("#procesado-" + trackNumber).val();
-                const armado = $("#armado-" + trackNumber).val();
-                const verificado = $("#verificado-" + trackNumber).val();
-                const etiquetado = $("#etiquetado-" + trackNumber).val();
-                const enviado = $("#enviado-" + trackNumber).val();
-
-                // Populate the modal content
-                $('#trackNumberInput').val(trackNumber);
-                $('#clientNameInput').val(clientName);
-
-                // Set the selected option for each select element
-                $('#procesadoInput').val(getValue(procesado));
-                $('#armadoInput').val(getValue(armado));
-                $('#verificadoInput').val(getValue(verificado));
-                $('#etiquetadoInput').val(getValue(etiquetado));
-                $('#enviadoInput').val(getValue(enviado));
-
-                $('#editOrderModal').modal('show');
-            });
-        });
-
-        function getValue(valor) {
-            console.log(valor)
-            switch (valor) {
-                case 'True':
-                case true:
-                    return 'true';
-                case 'False':
-                case false:
-                    return 'false';
-                default:
-                    return '';
-            }
+    function getValue(valor) {
+        switch (valor) {
+            case 'True':
+            case true:
+                return 'true';
+            case 'False':
+            case false:
+                return 'false';
+            default:
+                return '';
         }
+    }
 
-        // Simulate order
-        $(document).ready(function () {
-            $('.sim-btn').on('click', function () {
-                const trackNumber = $(this).attr('id').split('-')[1];
-                const procesado = $("#procesado-" + trackNumber).val();
-                const armado = $("#armado-" + trackNumber).val();
-                const verificado = $("#verificado-" + trackNumber).val();
-                const etiquetado = $("#etiquetado-" + trackNumber).val();
-                const enviado = $("#enviado-" + trackNumber).val();
-
-                $('#simulateOrderModalLabel').html(`Simular Orden #${trackNumber}`);
-                $('#simulateOrderModal').on('shown.bs.modal', () => {
-                    startSim(procesado, armado, verificado, etiquetado, enviado);
+    function startSim(proc, arm, ver, eti, env) {
+        const params = [proc, arm, ver, eti, env];
+        const positions = [
+            { top: $("#station1").css('top'), left: $("#station1").css('left') },
+            { top: $("#station2").css('top'), left: $("#station2").css('left') },
+            { top: $("#station3").css('top'), left: $("#station3").css('left') },
+            { top: $("#station4").css('top'), left: $("#station4").css('left') },
+            { top: $("#station5").css('top'), left: $("#station5").css('left') }
+        ];
+        $("#box").css({ 'top': '0px', 'left': '0px', 'transition': 'none' });
+        $("#cross").hide();
+        async function animateStation(index) {
+            if (index >= params.length || params[index] === '') {
+                return;
+            }
+            if (index === 2) {
+                $("#box").attr("src", "{% static 'media/cajas-carton.jpg' %}");
+            }
+            await $("#box").animate(positions[index], 1000);
+            await new Promise(r => setTimeout(r, 4000));
+            if (params[index] == 'True') {
+                $("#cross").css({
+                    'top': $('#box').css('top'),
+                    'left': $('#box').css('left'),
+                    'transition': 'none'
                 });
-                $('#simulateOrderModal').modal('show');
-            });
-        });
-
-        function startSim(proc, arm, ver, eti, env) {
-            const params = [proc, arm, ver, eti, env];
-            const positions = [
-                { top: $("#station1").css('top'), left: $("#station1").css('left') },
-                { top: $("#station2").css('top'), left: $("#station2").css('left') },
-                { top: $("#station3").css('top'), left: $("#station3").css('left') },
-                { top: $("#station4").css('top'), left: $("#station4").css('left') },
-                { top: $("#station5").css('top'), left: $("#station5").css('left') }
-            ];
-            $("#box").css({ 'top': '0px', 'left': '0px', 'transition': 'none' });
-            async function animateStation(index) {
-                console.log(`Index: ${index}`)
-                if (index >= params.length || params[index] === "") {
-                    return; // Stop if no more stations or empty parameter
-                }
-                if (index === 2) {
-                    $("#box").attr("src", "{% static 'media/cajas-carton.jpg' %}");
-                }
-                await $("#box").animate(positions[index], 1000);
-                await new Promise(r => setTimeout(r, 4000));
-                if (params[index] == "True") {
-                    $("#alertMessage").text(`Error en la estación ${index + 1}. Favor de revisar el producto.`);
-                    $("#alertModal").modal("show");
-                    return; // End if there's an error
-                }
-                animateStation(index + 1); // Call the next station
+                $("#cross").show();
+                $("#alertModalBody").text(`Error en la estación ${index + 1}. Favor de revisar el producto.`);
+                $("#alertModal").modal('show');
+                return;
             }
-            animateStation(0); // Start the animation from the first station
+            animateStation(index + 1); // Call the next station
         }
+        animateStation(0);
+    }
 
-        // Edit order
-        $('#editOrderForm').on("submit", function (e) {
-            e.preventDefault(); // Prevent default form submission
-
+    $(document).ready(() => {
+        $('#cross').hide();
+        // Add order
+        $('#addOrderForm').on('submit', (e) => {
+            e.preventDefault();
+            const actionUrl = e.target.action;
+            const formData = [
+                { name: 'quantityBoxes', value: e.target.quantityBoxes.value },
+                { name: 'orderName', value: e.target.orderName.value }
+            ]
             $.ajax({
-                url: "{% url 'tracking_edit' %}", // Ensure this URL points to the correct view
-                type: "POST",
-                data: {
-                    trackingNumber: $('#trackNumberInput').val(),
-                    clientName: $('#clientNameInput').val(),
-                    procesado: $('#procesadoInput').val(),
-                    armado: $('#armadoInput').val(),
-                    verificado: $('#verificadoInput').val(),
-                    etiquetado: $('#etiquetadoInput').val(),
-                    enviado: $('#enviadoInput').val(),
-                    csrfmiddlewaretoken: "{{ csrf_token }}",
+                url: actionUrl,
+                type: 'POST',
+                data: formData,
+                headers: { 'X-CSRFToken': e.target.csrfmiddlewaretoken.value },
+                success: (data) => {
+                    $('#alertModalBody').text(data.status);
+                    $('#alertModal').modal('show');
+                    // Refresh the table after closing the modal
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
                 },
-                success: function (response) {
-                    $("#editOrderModal").modal("hide");
-                    $("#alertMessage").text(response.message);
-                    $("#alertModal").modal("show");
-                },
-                error: function (error) {
-                    $("#alertMessage").text(error.responseJSON.message);
-                    $("#alertModal").modal("show");
-                },
+                error: (error) => {
+                    $('#alertModalBody').text(error.responseText);
+                    $('#alertModal').modal('show');
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                }
             });
         });
-    </script> -->
+        // Edit order
+        $('.edit-btn').on('click', function () {
+            const trackNumber = $(this).attr('id').split('-')[1];
+            const clientName = $(`#clientName-${trackNumber}`).val();
+            const procesado = $(`#procesado-${trackNumber}`).val();
+            const armado = $(`#armado-${trackNumber}`).val();
+            const prueba = $(`#prueba-${trackNumber}`).val();
+            const etiquetado = $(`#etiquetado-${trackNumber}`).val();
+            const enviado = $(`#enviado-${trackNumber}`).val();
+
+            $('#trackNumberInput').val(trackNumber);
+            $('#clientNameInput').val(clientName);
+            $('#procesadoInput').val(getValue(procesado));
+            $('#armadoInput').val(getValue(armado));
+            $('#pruebaInput').val(getValue(prueba));
+            $('#etiquetadoInput').val(getValue(etiquetado));
+            $('#enviadoInput').val(getValue(enviado));
+
+            $('#editOrderModal').modal('show');
+        });
+        $('#editOrderForm').on('submit', (e) => {
+            e.preventDefault();
+            const actionUrl = e.target.action;
+            const formData = [
+                { name: 'trackNumber', value: e.target.trackNumberInput.value },
+                { name: 'clientName', value: e.target.clientNameInput.value },
+                { name: 'procesado', value: e.target.procesadoInput.value },
+                { name: 'armado', value: e.target.armadoInput.value },
+                { name: 'prueba', value: e.target.pruebaInput.value },
+                { name: 'etiquetado', value: e.target.etiquetadoInput.value },
+                { name: 'enviado', value: e.target.enviadoInput.value }
+            ];
+            $.ajax({
+                url: actionUrl,
+                type: 'POST',
+                headers: { 'X-CSRFToken': e.target.csrfmiddlewaretoken.value },
+                data: formData,
+                success: (data) => {
+                    $('#alertModalBody').text(data.status);
+                    $('#alertModal').modal('show');
+                    // Refresh the table after closing the modal
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                },
+                error: (error) => {
+                    $('#alertModalBody').text(error.responseText);
+                    $('#alertModal').modal('show');
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                }
+            });
+        });
+        // Simulate order
+        $('.sim-btn').on('click', (e) => {
+            const trackNumber = e.target.id.split('-')[1];
+            const procesado = $(`#procesado-${trackNumber}`).val();
+            const armado = $(`#armado-${trackNumber}`).val();
+            const prueba = $(`#prueba-${trackNumber}`).val();
+            const etiquetado = $(`#etiquetado-${trackNumber}`).val();
+            const enviado = $(`#enviado-${trackNumber}`).val();
+            startSim(procesado, armado, prueba, etiquetado, enviado);
+        });
+    });
+</script>
 {% endblock %}

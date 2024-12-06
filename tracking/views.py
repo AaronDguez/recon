@@ -23,12 +23,13 @@ def tracking_index(request, page=1, status:JsonResponse=None):
 @csrf_exempt  
 def addTrack(request):
     if request.method == 'POST':
-        result: JsonResponse = addTracking.addTracking(request.POST)
-        
-        return tracking_index(request, status=result)
+        return addTracking.addTracking(request.POST)
     else:
-        return tracking_index(request, status=JsonResponse({'status': 'Invalid Access'}))
+        return JsonResponse({'status': 'Invalid Access'})
 
 @csrf_exempt
-def updateTrack(request):
-    pass
+def updTrack(request):
+    if request.method == 'POST':
+        return updateTrack.updateTrack(request.POST)
+    else:
+        return JsonResponse({'status': 'Invalid Access'})

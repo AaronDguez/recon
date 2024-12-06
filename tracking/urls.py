@@ -22,5 +22,5 @@ urlpatterns = [
     path('', views.tracking_index, name='tracking_index'),
     path('<int:page>/', views.tracking_index, name='tracking_index'),
     path('add/', views.addTrack, name='tracking_add'),
-    path('edit/', views.updateTrack, name='tracking_edit'),
+    path('edit/', views.updTrack, name='tracking_edit'),
 ]

@@ -13,7 +13,7 @@ class Material(models.Model):
         verbose_name_plural = 'Materiales'
     
     def __str__(self) -> str:
-        return self.materiales
+        return f'{self.materiales}-{self.cantidad}'
     
 class ActualizacionInventario(models.Model):
     material = models.ForeignKey(Material, on_delete=models.CASCADE)
