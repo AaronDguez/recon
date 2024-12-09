@@ -21,6 +21,8 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'), # Home
+    path('<str:track>/', views.searchTracking, name='searchTracking'),
     path('tracking/', include('tracking.urls')), # Tracking
     path('inventario/', include('inventario.urls')), # Inventario
+    path('pruebas/', include('pruebas.urls')), # Pruebas
 ]
