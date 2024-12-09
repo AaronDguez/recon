@@ -1,0 +1,259 @@
+{% extends 'base.html' %}{% block content %}{% load static %}
+{% if track %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover" id="trackTable">
+        <thead class="table-info">
+            <th>Tracking Number</th>
+            <th>Cliente</th>
+            <th>Procesado</th>
+            <th>Armado</th>
+            <th>Pruebas</th>
+            <th>Etiquetado</th>
+            <th>Enviado</th>
+            <th>Acciones</th>
+        </thead>
+        <tbody class="table-group-divider">
+            <tr>
+                <td>
+                    {{ track.trackNumber }}
+                    <input type="hidden" id="trackingNumber-{{ track.trackNumber }}" value="{{ track.trackNumber }}">
+                </td>
+                <td>
+                    {{ track.clientName }}
+                    <input type="hidden" id="clientName-{{ track.trackNumber }}" value="{{ track.clientName }}">
+                </td>
+                <!-- Procesado -->
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated {% if track.procesado == None %} bg-primary {% elif track.procesado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <input type="hidden" id="procesado-{{ track.trackNumber }}"
+                        value="{% if track.procesado == None %}{% else %}{{track.procesado}}{% endif %}">
+                </td>
+                <!-- Armado -->
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated {% if track.armado == None %} bg-primary {% elif track.armado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <input type="hidden" id="armado-{{ track.trackNumber }}"
+                        value="{% if track.armado == None %}{% else %}{{track.armado}}{% endif %}">
+                </td>
+                <!-- Prueba -->
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated {% if track.prueba == None %} bg-primary {% elif track.prueba == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <input type="hidden" id="prueba-{{ track.trackNumber }}"
+                        value="{% if track.prueba == None %}{% else %}{{track.prueba}}{% endif %}">
+                </td>
+                <!-- Etiquetado -->
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated {% if track.etiquetado == None %} bg-primary {% elif track.etiquetado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <input type="hidden" id="etiquetado-{{ track.trackNumber }}"
+                        value="{% if track.etiquetado == None %}{% else %}{{track.etiquetado}}{% endif %}">
+                </td>
+                <!-- Enviado -->
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated {% if track.enviado == None %} bg-primary {% elif track.enviado == 0 %} bg-success {% else %} bg-danger {% endif %} progress-bar-striped"
+                            role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <input type="hidden" id="enviado-{{ track.trackNumber }}"
+                        value="{% if track.enviado == None %}{% else %}{{track.enviado}}{% endif %}">
+                </td>
+                <!-- Action Buttons -->
+                <td>
+                    <button id="edit-{{track.trackNumber}}" class="btn btn-primary edit-btn"
+                        type="button">Editar</button>
+                    {% if track.prueba != False %}
+                    <form action="{% url 'pruebas_index' %}" method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="track" value="{{ track.trackNumber }}">
+                        <button class="btn btn-info" type="submit">Prueba</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal to edit order -->
+<div class="modal fade" id="editOrderModal" tabindex="-1" role="dialog" aria-labelledby="editOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 80%;" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="col-md-11">
+                    <h5 class="modal-title" id="editOrderModalLabel">Editar Orden</h5>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">X</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form id="editOrderForm" action="{% url 'tracking_edit' %}" method="post">
+                    {% csrf_token %}
+                    <!-- Tracking Number y Cliente -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="trackNumberInput" class="form-label" id="trackNumber"></label>
+                                <input type="text" class="form-control" id="trackNumberInput" disabled>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="clientNameInput" class="form-label" id="clientName"></label>
+                                <input type="text" class="form-control" id="clientNameInput">
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <!-- Estado de las estaciones -->
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="procesadoInput" class="form-label" id="procesado">Procesado</label>
+                                <select id="procesadoInput" class="form-select">
+                                    <option value="">Falta procesar</option>
+                                    <option value="false">Procesado</option>
+                                    <option value="true">Error en produccion</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="armadoInput" class="form-label" id="armado">Armado</label>
+                                <select id="armadoInput" class="form-select">
+                                    <option value="">Falta armar</option>
+                                    <option value="false">Armado</option>
+                                    <option value="true">Error en armado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="pruebaInput" class="form-label" id="prueba">Prueba</label>
+                                <select id="pruebaInput" class="form-select">
+                                    <option value="">Falta probar</option>
+                                    <option value="false">Probado</option>
+                                    <option value="true">Error en las pruebas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="etiquetadoInput" class="form-label" id="etiquetado">Etiquetado</label>
+                                <select id="etiquetadoInput" class="form-select">
+                                    <option value="">Falta etiquetar</option>
+                                    <option value="false">Etiquetado</option>
+                                    <option value="true">Error en etiquetado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label for="enviadoInput" class="form-label" id="enviado">Enviado</label>
+                                <select id="enviadoInput" class="form-select">
+                                    <option value="">Falta enviar</option>
+                                    <option value="false">Enviado</option>
+                                    <option value="true">Error en envio</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-9">&nbsp;</div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getValue(valor) {
+        switch (valor) {
+            case 'True':
+            case true:
+                return 'true';
+            case 'False':
+            case false:
+                return 'false';
+            default:
+                return '';
+        }
+    }
+
+    $(document).ready(() => {
+        // Edit order
+        $('.edit-btn').on('click', function () {
+            const trackNumber = $(this).attr('id').split('-')[1];
+            const clientName = $(`#clientName-${trackNumber}`).val();
+            const procesado = $(`#procesado-${trackNumber}`).val();
+            const armado = $(`#armado-${trackNumber}`).val();
+            const prueba = $(`#prueba-${trackNumber}`).val();
+            const etiquetado = $(`#etiquetado-${trackNumber}`).val();
+            const enviado = $(`#enviado-${trackNumber}`).val();
+
+            $('#trackNumberInput').val(trackNumber);
+            $('#clientNameInput').val(clientName);
+            $('#procesadoInput').val(getValue(procesado));
+            $('#armadoInput').val(getValue(armado));
+            $('#pruebaInput').val(getValue(prueba));
+            $('#etiquetadoInput').val(getValue(etiquetado));
+            $('#enviadoInput').val(getValue(enviado));
+
+            $('#editOrderModal').modal('show');
+        });
+        $('#editOrderForm').on('submit', (e) => {
+            e.preventDefault();
+            const actionUrl = e.target.action;
+            const formData = [
+                { name: 'trackNumber', value: e.target.trackNumberInput.value },
+                { name: 'clientName', value: e.target.clientNameInput.value },
+                { name: 'procesado', value: e.target.procesadoInput.value },
+                { name: 'armado', value: e.target.armadoInput.value },
+                { name: 'prueba', value: e.target.pruebaInput.value },
+                { name: 'etiquetado', value: e.target.etiquetadoInput.value },
+                { name: 'enviado', value: e.target.enviadoInput.value }
+            ];
+            $.ajax({
+                url: actionUrl,
+                type: 'POST',
+                headers: { 'X-CSRFToken': e.target.csrfmiddlewaretoken.value },
+                data: formData,
+                success: (data) => {
+                    $('#alertModalBody').text(data.status);
+                    $('#alertModal').modal('show');
+                    // Refresh the table after closing the modal
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                },
+                error: (error) => {
+                    $('#alertModalBody').text(error.responseText);
+                    $('#alertModal').modal('show');
+                    $('#alertModal').on('hidden.bs.modal', () => {
+                        location.reload();
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% else %}
+<h1>{{ status }}</h1>
+{% endif %}
+{% endblock %}
