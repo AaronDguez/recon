@@ -1,0 +1,25 @@
+{% extends 'base.html' %} {% block content %} {% load static %}
+{% if track %}
+
+
+<!-- MiddleEnd -->
+<script>
+    $(document).ready(function () {
+        // Hablarle al Arduino
+
+        // Recibir datos del Arduino
+
+    });
+</script>
+{% else %} <!-- Mostrar mensaje de error -->
+<div class="alert alert-danger d-flex align-items-center" role="alert">
+    <svg xmlns="{% static 'media/SVG/dash-circle-fill.svg' %}" width="16" height="16" fill="currentColor" class="bi bi-dash-circle-fill"
+        viewBox="0 0 16 16">
+        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1z" />
+    </svg>
+    <div>
+        {{ status }}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

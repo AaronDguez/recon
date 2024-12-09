@@ -12,7 +12,6 @@ class Tracking(models.Model):
 
     def to_dict(self) -> dict:
         return {
-            'id': self.id,
             'trackNumber': self.trackNumber,
             'clientName': self.clientName,
             'procesado': self.procesado,

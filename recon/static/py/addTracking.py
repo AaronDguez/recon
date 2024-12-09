@@ -4,11 +4,16 @@ from django.http import JsonResponse
 import time
 import random
 
-"""
-    This function creates a new order in the database.
-    trackData: dict - Dictionary with the order data from the form.
-"""
 def addTracking(trackData:dict):
+    """
+    This function adds an order to the database.
+    
+    Args:
+        trackData (dict): Dictionary with the order information.
+        
+    Returns:
+        JsonResponse: {"status": "Order added"} if the order was added successfully, {"status": "Error adding order, <error>"} if there was an error adding the order, {"status": "Material not found"} if there is not materials on the database.
+    """
     year: int = time.localtime().tm_year
     week: int = time.localtime().tm_yday // 7
     # Generate a unique track number with the format MYYYYWWXXX where:
@@ -36,11 +41,18 @@ def addTracking(trackData:dict):
         # If there the Material table is empty, return an error message.
         return JsonResponse({'status': 'Material not found'})
 
-"""
-    This function checks if there is enough material to create the order.
-    quantity: int - Quantity of boxes to create.
-"""
 def checkMaterial(quantity:int):
+    """This function checks if there is enough material to create the order.
+
+    Args:
+        quantity (int): Quantity of boxes to create the order.
+
+    Raises:
+        Material.DoesNotExist: If there are no materials in the database.
+
+    Returns:
+        bool: True if there is enough material, False if there is not enough material.
+    """
     try:
         Materiales = Material.objects.all()
         # If there are no materials in the database, throw an exception.

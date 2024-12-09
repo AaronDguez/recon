@@ -1,11 +1,15 @@
 from tracking.models import Tracking
 from django.http import JsonResponse
 
-"""
-    This function updates an order in the database.
-    trackData: dict - Dictionary with the order data from the form.
-"""
 def updateTrack(trackData:dict):
+    """This function updates the status of an order in the database
+
+    Args:
+        trackData (dict): Dictionary with the order information.
+
+    Returns:
+        JsonResponse: {"status": "Order updated"} if the order was updated successfully, {"status": "Order not found"} if the order was not found.
+    """
     trackNumber = trackData.get('trackNumber')
     clientName = trackData.get('clientName')
     procesado = trackData.get('procesado')

@@ -20,7 +20,7 @@
                         <th>Cliente</th>
                         <th>Procesado</th>
                         <th>Armado</th>
-                        <th>Verificación</th>
+                        <th>Pruebas</th>
                         <th>Etiquetado</th>
                         <th>Enviado</th>
                         <th>Acciones</th>
@@ -124,19 +124,31 @@
             <div class="card">
                 <div class="simulation-container">
                     <!-- Contenido de la simulación -->
-                    <p><img src="{% static 'media/procesing-icon.png' %}" class="station" id="station1"
-                            alt="Estación 1"></p>
-                    <p><img src="{% static 'media/build-icon.jpg' %}" class="station" id="station2" alt="Estación 2">
+                    <p>
+                        <img src="{% static 'media/procesing-icon.png' %}" class="station" id="station1"
+                            alt="Estación 1">
                     </p>
-                    <p><img src="{% static 'media/checked-icon.png' %}" class="station" id="station3" alt="Estación 3">
+                    <p>
+                        <img src="{% static 'media/build-icon.jpg' %}" class="station" id="station2" alt="Estación 2">
                     </p>
-                    <p><img src="{% static 'media/ticket-icon.png' %}" class="station" id="station4" alt="Estación 4">
+                    <p>
+                        <a href="{% url 'pruebas_index' %}">
+                            <img src="{% static 'media/checked-icon.png' %}" class="station" id="station3"
+                                alt="Estación 3" data-bs-toggle="tooltip" data-bs-placement="left"
+                                title="Ir a la prueba">
+                        </a>
                     </p>
-                    <p><img src="{% static 'media/shipped-icon.webp' %}" class="station" id="station5" alt="Estación 5">
+                    <p>
+                        <img src="{% static 'media/ticket-icon.png' %}" class="station" id="station4" alt="Estación 4">
+                    </p>
+                    <p>
+                        <img src="{% static 'media/shipped-icon.webp' %}" class="station" id="station5"
+                            alt="Estación 5">
                     </p>
                     <div id="box-container">
                         <img src="{% static 'media/flat-box.jpg' %}" class="box" id="box" alt="Caja desarmada">
-                        <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja" aria-hidden="true">
+                        <img src="{% static 'media/red-cross.webp' %}" class="box" id="cross" alt="Cruz roja"
+                            aria-hidden="true">
                     </div>
                 </div>
             </div>
@@ -504,6 +516,12 @@
             const enviado = $(`#enviado-${trackNumber}`).val();
             startSim(procesado, armado, prueba, etiquetado, enviado);
         });
+        // Send to the pruebas to test the order
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
     });
 </script>
 {% endblock %}
