@@ -1,13 +1,13 @@
 import serial
 
-def connect() -> serial.Serial | str:
+def connect() -> object | str:
     """Conecta con el arduino por el puerto serial
 
     Returns:
-        serial.Serial | str: Objeto serial.Serial si se conectó correctamente, str si no se pudo conectar
+        object | str: Objeto serial.Serial si se conectó correctamente, str si no se pudo conectar
     """
     try:
-        arduino: serial.Serial = serial.Serial(
+        arduino = serial.Serial(
             port='/dev/ttyACM0',
             baudrate=9600,
             parity=serial.PARITY_NONE,

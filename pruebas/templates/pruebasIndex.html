@@ -1,25 +1,229 @@
 {% extends 'base.html' %} {% block content %} {% load static %}
-{% if track %}
+<div class="row">
+    <div class="col-md-9">
+        <!-- Search bar -->
+        <form class="d-flex" role="search" id="searchTrackForm">
+            <div class="input-group mb-3" style="align-items: stretch;">
+                <span class="input-group-text" style="height: 100%;">
+                    <svg xmlns="{% static 'media/SVG/search.svg' %}" width="16" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </span>
+                <input class="form-control me-2" type="search" placeholder="Tracking Number" style="height: 100%;"
+                    aria-label="Search" name="trackNum">
+            </div>
+            <button class="btn btn-outline-success" type="submit" style="height: 100%;">Buscar</button>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <button id="startProcess" class="btn btn-primary">Iniciar lectura</button>
+    </div>
+</div>
+<br>
+<div class="row">
+    <div class="col-md-9">&nbsp;</div>
+    <div class="col-md-3">
+        <button id="stopProcess" class="btn btn-danger">Detener lectura</button>
+    </div>
+</div>
+<br>
+<hr>
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+            <tr>
+                <th scope="col">Tracking Number</th>
+                <th scope="col">Tamaño</th>
+                <th scope="col">Color</th>
+                <th scope="col">Interior lleno</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <p id="track"></p>
+                </td>
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated bg-primary progress-bar-striped"
+                            role="progressbar" style="width: 100%" id="tamanoBar"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated bg-primary progress-bar-striped"
+                            role="progressbar" style="width: 100%" id="colorBar"></div>
+                    </div>
+                </td>
+                <td>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-animated bg-primary progress-bar-striped"
+                            role="progressbar" style="width: 100%" id="llenoBar"></div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <img src="{% static 'media/favicon.ico' %}" class="rounded me-2" alt="..." width="16" height="16">
+            <strong class="me-auto">Pruebas</strong>
+            <small>Just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            <p id="toastText"></p>
+        </div>
+    </div>
+</div>
 
 <!-- MiddleEnd -->
 <script>
     $(document).ready(function () {
+        let timeOut = 5000;
+        // Search for tracking number
+        $('#searchTrackForm').submit((e) => {
+            e.preventDefault();
+            let track = e.target.trackNum.value;
+            $.ajax({
+                url: "{% url 'searchTracking' %}",
+                type: 'POST',
+                data: { 'track': track },
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    console.log(`${response.status}`);
+                    if (response.status == 'Orden encontrada y lista para pruebas.') {
+                        $('#track').text(track);
+                        $('#toastText').text(response.status);
+                        $('.toast').toast('show');
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                        }, timeOut);
+                    }
+                    else {
+                        $('#track').text('');
+                        $('#toastText').text(response.status);
+                        $('.toast').toast('show');
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                        }, timeOut);
+                    }
+                },
+                error: function (response) {
+                    $('#toastText').text(response.responseText.toString());
+                    $('.toast').toast('show');
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                    }, timeOut);
+                }
+            });
+        });
         // Hablarle al Arduino
 
         // Recibir datos del Arduino
-
+        $('#startProcess').click(() => {
+            let state = null;
+            // Avisar al usuario que se está iniciando la lectura
+            $('#toastText').text('Iniciando lectura. Espere por favor...');
+            $('.toast').toast('show');
+            setTimeout(() => {
+                $('.toast').toast('hide');
+            }, timeOut);
+            // Enviar señal de inicio al Arduino
+            $.ajax({
+                url: "{% url 'enviarArduino' %}",
+                type: 'POST',
+                data: { 'dato': '<INICIO>' },
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    state = true;
+                },
+                error: function (response) {
+                    state = false;
+                    $('#toastText').text(response.responseText.toString());
+                    $('.toast').toast('show');
+                }
+            });
+            // Si se envio la señal de inicio, se inicia la lectura
+            if (state) {
+                let pasoPruebas = null;
+                $.ajax({
+                    url: "{% url 'leerArduino' %}",
+                    type: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    success: function (response) {
+                        // Cambiar los CSS de las barras de progreso de acuardo a los datos recibidos
+                        // Las clases deben ser bg-success si el valor el 'True' y bg-danger si el valor es 'False'
+                        $('#tamanoBar').removeClass('bg-primary');
+                        $('#colorBar').removeClass('bg-primary');
+                        $('#llenoBar').removeClass('bg-primary');
+                        $('#tamanoBar').addClass(response.tamano ? 'bg-success' : 'bg-danger');
+                        $('#colorBar').addClass(response.color ? 'bg-success' : 'bg-danger');
+                        $('#llenoBar').addClass(response.lleno ? 'bg-success' : 'bg-danger');
+                        pasoPruebas = response.tamano && response.color && response.lleno;
+                    },
+                    error: function (response) {
+                        $('#toastText').text(response.responseText.toString());
+                        $('.toast').toast('show');
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                        }, timeOut);
+                    }
+                });
+                // Actualizar la DB con los resultados de las pruebas
+                $.ajax({
+                    url: "{% url 'saveTracking' %}",
+                    type: 'POST',
+                    data: { 'track': $('#track').text(), 'pasoPrueba': pasoPruebas },
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                    success: function (response) {
+                        $('#toastText').text(response.status);
+                        $('.toast').toast('show');
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                        }, timeOut);
+                    },
+                    error: function (response) {
+                        $('#toastText').text(response.responseText.toString());
+                        $('.toast').toast('show');
+                        setTimeout(() => {
+                            $('.toast').toast('hide');
+                        }, timeOut);
+                    }
+                });
+            }
+            $.ajax({
+                url: "{% url 'enviarArduino' %}",
+                type: 'POST',
+                data: { 'dato': '<DETENER>' },
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+                success: function (response) {
+                    // Avisar que la lectura fue exitosa
+                    $('#toastText').text('Lectura finalizada. Datos actualizados.');
+                    $('.toast').toast('show');
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                        $.ajax({
+                            url: "{% url 'tracking_index' %}",
+                            type: 'GET',
+                            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                        });
+                    }, timeOut);
+                },
+                error: function (response) {
+                    $('#toastText').text(response.responseText.toString());
+                    $('.toast').toast('show');
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                    }, timeOut);
+                }
+            });
+        });
     });
 </script>
-{% else %} <!-- Mostrar mensaje de error -->
-<div class="alert alert-danger d-flex align-items-center" role="alert">
-    <svg xmlns="{% static 'media/SVG/dash-circle-fill.svg' %}" width="16" height="16" fill="currentColor" class="bi bi-dash-circle-fill"
-        viewBox="0 0 16 16">
-        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M4.5 7.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1z" />
-    </svg>
-    <div>
-        {{ status }}
-    </div>
-</div>
-{% endif %}
 {% endblock %}
