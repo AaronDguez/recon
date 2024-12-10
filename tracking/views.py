@@ -56,7 +56,8 @@ def saveTracking(request):
         track = request.POST['track']
         pasoPrueba = request.POST['pasoPrueba']
         order = Tracking.objects.get(trackNumber=track)
-        order.prueba = False if pasoPrueba == 'true' else True
+        order.prueba = False if pasoPrueba == 'true' or pasoPrueba == "True" else True
+        order.armado = None if pasoPrueba == 'true' or pasoPrueba == "True" else order.armado
         order.save()
         return JsonResponse({"status": "Orden guardada correctamente." })
     else:

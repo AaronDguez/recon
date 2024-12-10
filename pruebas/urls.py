@@ -20,6 +20,5 @@ from . import views
 
 urlpatterns = [
     path('', views.pruebas_index, name='pruebas_index'),
-    path('read/', views.leerArduino, name='leerArduino'),
-    path('send/', views.enviarArduino, name='enviarArduino'),
+    path('read/', views.leerPruebas, name='leerPruebas'),
 ]

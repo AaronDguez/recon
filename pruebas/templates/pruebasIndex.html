@@ -18,14 +18,7 @@
         </form>
     </div>
     <div class="col-md-3">
-        <button id="startProcess" class="btn btn-primary">Iniciar lectura</button>
-    </div>
-</div>
-<br>
-<div class="row">
-    <div class="col-md-9">&nbsp;</div>
-    <div class="col-md-3">
-        <button id="stopProcess" class="btn btn-danger">Detener lectura</button>
+        <button id="updateTableBtn" class="btn btn-primary">Actualizar Datos</button>
     </div>
 </div>
 <br>
@@ -85,7 +78,7 @@
 <!-- MiddleEnd -->
 <script>
     $(document).ready(function () {
-        let timeOut = 5000;
+        let timeOut = 7000;
         // Search for tracking number
         $('#searchTrackForm').submit((e) => {
             e.preventDefault();
@@ -123,51 +116,71 @@
                 }
             });
         });
-        // Hablarle al Arduino
-
-        // Recibir datos del Arduino
-        $('#startProcess').click(() => {
-            let state = null;
-            // Avisar al usuario que se está iniciando la lectura
-            $('#toastText').text('Iniciando lectura. Espere por favor...');
-            $('.toast').toast('show');
-            setTimeout(() => {
-                $('.toast').toast('hide');
-            }, timeOut);
-            // Enviar señal de inicio al Arduino
-            $.ajax({
-                url: "{% url 'enviarArduino' %}",
-                type: 'POST',
-                data: { 'dato': '<INICIO>' },
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                success: function (response) {
-                    state = true;
-                },
-                error: function (response) {
-                    state = false;
-                    $('#toastText').text(response.responseText.toString());
+        // Update table
+        $('#updateTableBtn').on('click', async () => {
+            try {
+                const pasoPrueba = await updateTable();
+                if (pasoPrueba){
+                    $('#toastText').text('Pruebas pasadas con éxito.\n\tTabla actualizada.');
                     $('.toast').toast('show');
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                    }, timeOut);
                 }
-            });
-            // Si se envio la señal de inicio, se inicia la lectura
-            if (state) {
-                let pasoPruebas = null;
+                else{
+                    $('#toastText').text('Una o varias pruebas no fueron pasadas.\n\tTabla actualizada.');
+                    $('.toast').toast('show');
+                    setTimeout(() => {
+                        $('.toast').toast('hide');
+                    }, timeOut);
+                }
+                await saveResult(pasoPrueba);
+            } catch (e) {
+                $('#toastText').text(`${e}`);
+                $('.toast').toast('show');
+                setTimeout(() => {
+                    $('.toast').toast('hide');
+                }, timeOut);
+        }
+        });
+        function updateTable() {
+            return new Promise((resolve, reject) => {
                 $.ajax({
-                    url: "{% url 'leerArduino' %}",
+                    url: "{% url 'leerPruebas' %}",
                     type: 'POST',
                     headers: { 'X-CSRFToken': '{{ csrf_token }}' },
                     success: function (response) {
-                        // Cambiar los CSS de las barras de progreso de acuardo a los datos recibidos
-                        // Las clases deben ser bg-success si el valor el 'True' y bg-danger si el valor es 'False'
+                        data = response.data;
                         $('#tamanoBar').removeClass('bg-primary');
                         $('#colorBar').removeClass('bg-primary');
                         $('#llenoBar').removeClass('bg-primary');
-                        $('#tamanoBar').addClass(response.tamano ? 'bg-success' : 'bg-danger');
-                        $('#colorBar').addClass(response.color ? 'bg-success' : 'bg-danger');
-                        $('#llenoBar').addClass(response.lleno ? 'bg-success' : 'bg-danger');
-                        pasoPruebas = response.tamano && response.color && response.lleno;
+
+                        let pasoPrueba = true;
+
+                        if (data.tamano == 'True' || data.tamano == 'true')
+                            $('#tamanoBar').addClass('bg-success');
+                        else {
+                            $('#tamanoBar').addClass('bg-danger');
+                            pasoPrueba = false;
+                        }
+
+                        if (data.color == 'True' || data.color == 'true')
+                            $('#colorBar').addClass('bg-success');
+                        else {
+                            $('#colorBar').addClass('bg-danger');
+                            pasoPrueba = false;
+                        }
+
+                        if (data.lleno == 'True' || data.lleno == 'true')
+                            $('#llenoBar').addClass('bg-success');
+                        else {
+                            $('#llenoBar').addClass('bg-danger');
+                            pasoPrueba = false;
+                        }
+                        resolve(pasoPrueba)
                     },
                     error: function (response) {
+                        reject(response.responseText.toString());
                         $('#toastText').text(response.responseText.toString());
                         $('.toast').toast('show');
                         setTimeout(() => {
@@ -175,20 +188,25 @@
                         }, timeOut);
                     }
                 });
-                // Actualizar la DB con los resultados de las pruebas
+            });
+        }
+        function saveResult(pasoPrueba){
+            return new Promise((resolve, reject) => {
                 $.ajax({
-                    url: "{% url 'saveTracking' %}",
+                    url: '{% url "saveTracking" %}',
                     type: 'POST',
-                    data: { 'track': $('#track').text(), 'pasoPrueba': pasoPruebas },
+                    data: { 'pasoPrueba': pasoPrueba },
                     headers: { 'X-CSRFToken': '{{ csrf_token }}' },
                     success: function (response) {
-                        $('#toastText').text(response.status);
+                        resolve(response.responseText.toString());
+                        $('#toastText').text(response.responseText.toString());
                         $('.toast').toast('show');
                         setTimeout(() => {
                             $('.toast').toast('hide');
                         }, timeOut);
                     },
                     error: function (response) {
+                        reject(response.responseText.toString());
                         $('#toastText').text(response.responseText.toString());
                         $('.toast').toast('show');
                         setTimeout(() => {
@@ -196,34 +214,8 @@
                         }, timeOut);
                     }
                 });
-            }
-            $.ajax({
-                url: "{% url 'enviarArduino' %}",
-                type: 'POST',
-                data: { 'dato': '<DETENER>' },
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-                success: function (response) {
-                    // Avisar que la lectura fue exitosa
-                    $('#toastText').text('Lectura finalizada. Datos actualizados.');
-                    $('.toast').toast('show');
-                    setTimeout(() => {
-                        $('.toast').toast('hide');
-                        $.ajax({
-                            url: "{% url 'tracking_index' %}",
-                            type: 'GET',
-                            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-                        });
-                    }, timeOut);
-                },
-                error: function (response) {
-                    $('#toastText').text(response.responseText.toString());
-                    $('.toast').toast('show');
-                    setTimeout(() => {
-                        $('.toast').toast('hide');
-                    }, timeOut);
-                }
             });
-        });
+        }
     });
 </script>
 {% endblock %}
