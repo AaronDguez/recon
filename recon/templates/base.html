@@ -58,9 +58,9 @@
                         </a>
                     </li>
                 </ul>
-                <form class="d-flex" role="search" action="{% url 'searchTracking' %}" method="POST" id="searchForm">
+                <form class="d-flex" role="search" action="{% url 'searchTrackingByTrack' %}" method="POST" id="searchFormByTrack">
                     {% csrf_token %}
-                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search" name="track">
+                    <input class="form-control me-2" type="search" placeholder="Buscar por Track. Number" aria-label="Search" name="track">
                     <button class="btn btn-outline-success" type="submit">Buscar</button>
                 </form>
             </div>
